@@ -28,6 +28,7 @@ import ujson.Obj
 import ujson.Str
 
 object IntelliJ {
+
   def launch(project: Project, open: OpenOptions): Unit = {
     val applications = Paths.get("/Applications")
     val candidates = List(

@@ -1,7 +1,9 @@
 package scala.meta.internal.fastpass.pantsbuild.commands
 
-import scala.meta.internal.fastpass.pantsbuild.Export
+import com.sun.jna._
+import com.zaxxer.nuprocess.internal.LibC.SyscallLibrary
 
+import scala.meta.internal.fastpass.pantsbuild.Export
 import metaconfig.cli.CliApp
 import metaconfig.cli.Command
 import metaconfig.cli.Messages
@@ -20,11 +22,22 @@ object RefreshCommand extends Command[RefreshOptions]("refresh") {
         "fastpass refresh --intellij PROJECT_NAME"
       ).map(Doc.text)
     )
+
+  trait SyscallLib extends Library {
+    def setsid(): Int
+  }
+
   override def complete(
       context: TabCompletionContext
   ): List[TabCompletionItem] =
     SharedCommand.complete(context, allowsMultipleProjects = true)
   def run(refresh: RefreshOptions, app: CliApp): Int = {
+    try {
+      val lib = Native.loadLibrary(Platform.C_LIBRARY_NAME, classOf[SyscallLib])
+      lib.setsid()
+    } catch {
+      case e: Throwable =>
+    }
     val projects = Project.fromCommon(refresh.common)
     val errors = refresh.projects.map { projectName =>
       projects.find(_.matchesName(projectName)) match {
